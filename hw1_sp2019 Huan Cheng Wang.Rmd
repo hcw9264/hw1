@@ -1,0 +1,294 @@
+---
+title: "Home Work 1"
+author:
+- 'Submitted by: Huan Cheng Wang'
+- 'UNI: hw2647'
+date: 'Posted: 1/28/2019 | Due: 1/31/2019'
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    number_sections: no
+subtitle: (APANPS5335 Machine Learning)
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+The goal of this assignment will to build proficiency in R and RMarkdown. If you have any trouble, Google probably already has the answer. 
+
+For additional help, please see the following resources:
+
+- Data Mining with R by Luis Torgo
+- R in a Nutshell by Joseph Adler
+- https://youtu.be/7BXX7TaF1Gs
+
+__Instructions__: Please submit both the RMarkdown file and a PDF version. Make sure to complete the name and UNI in the header of this document.
+
+\newpage
+
+# Question 1 (3 points)
+
+Install R, RStudio, and RMarkdown. In your RMarkdown file, print out the version using the `version` command.
+
+__Answer__
+
+```{r}
+# Shows the versions of your R system
+# RUBRIC: 3 points for correctly using the command and displaying the output
+# Answer: (Write your R codes below this line)
+version
+```
+
+\newpage
+
+# Question 2 (6 points)
+
+Complete the Table with your responses for each of the following questions.
+
+
+|Question | Response |
+|------------------------------------------------|-------------------------:|
+What was your last degree program (BA, MS, PhD, etc), major, and year? |  My last degree was a BBA in Corporate Finance, acquired in the year 2018:| 
+What is your proficiency in calculus? 1 (poor) - 5 (excellent) | I personally consider my proficiency in calculus to be 3 :|
+What is your proficiency in linear algebra? 1 (poor) - 5 (excellent) | I personally consider my liear algebra capacity to be at 2 :|
+What is your proficiency in probability and statistics? 1 (poor) - 5 (excellent)| I personally consider my probability and statistics capacity to be at 3
+What is your proficiency in statistical inference (i.e., regression)? 1 (poor) - 5 (excellent) |I personally consider my statistical inference to be at 3
+What is your proficiency with R programming? 1 (poor) - 5 (excellent)| I personally consider my proficiency in R programing to be at 2
+
+\newpage
+
+
+# Question 3 (3 points)
+
+Create a function that sums all of the even numbers from 1 to 100. You can create a function in R using the following:
+
+```{r, eval=FALSE}
+functionName <- function() {
+}
+```
+
+__Answer__
+
+```{r}
+# RUBRIC: 
+# Constructing function: 1 point
+# Correct logic: 1 point
+# Correct answer: 1 point
+# Printing the result
+a=c(1:100)
+Q3 <- function(a) {
+	sum(a[a%%2==0])
+}
+Q3(a)
+```
+
+\newpage
+
+
+# Question 4 (3 points)
+
+Create a function that uses vector operations to add all of the even numbers from 1 to 100. *Hint: use the modulus operator `%%` to determine parity.*
+
+```{r}
+# RUBRIC: 
+# Constructing function: 1 point
+# Correct logic: 1 point
+# Correct answer: 1 point
+# Printing the result
+a=c(1:100)
+Q4 <- function(a) {
+	sum(a[a%%2!=0])
+}
+Q4(a)
+```
+
+\newpage
+
+
+# Question 5
+
+Load and explore the heart disease data set. The data set is available with the homework on Canvas. The attribute of the data set can be found at https://archive.ics.uci.edu/ml/datasets/Heart+Disease 
+
+## 5(a) (1 point)
+Load the data set and print the number of rows.
+
+```{r}
+# Make sure to put the data in the same folder where your Rmd source 
+# file is located. Do not use the path when loading the data set.
+setwd("~/Desktop/APANPS5335")
+heart_disease_data= read.csv("heart_disease.csv")
+```
+
+\newpage
+
+
+## 5(b) (1 point)
+
+Use the `summary()` function to produce numerical summary statistics.
+
+```{r}
+# Print the summary
+summary(heart_disease_data)
+```
+
+\newpage
+
+## 5(c) (3 point)
+
+Use the `hist` function to create a histogram of the `age` for the males (`sex == 1`). Use a meaningful x-axis label and title for full credit.
+
+```{r}
+# RUBRIC:
+# 1 point for the histogram
+# 1 point for x-axis label
+# 1 point for title
+# select the male patients only
+# Draw histogram
+library("dplyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+library("ggplot2", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+heart_disease_male=filter(heart_disease_data,sex>0)
+hist(heart_disease_male$age,xlab = "Age of Patient",main = "Male Patients with Heart Disease")
+```
+
+\newpage
+
+
+## 5(d) (5 points)
+
+Draw a scatterplot of age (`age`) and serum cholesterol (`chol`) for all patients using the built in R function. Calculate the *correlation coefficient* between age and cholesterol.
+
+```{r}
+# Scatterplot
+# RUBRIC:
+# 1 point for the plot
+# 1 point for x-axis label
+# 1 point for x-axis label
+# 1 point for title
+plot(heart_disease_male$age,heart_disease_male$chol,xlab = "Patient Age",xlim = c(20,100), ylab = "Cholesterol Level", ylim= c(0,600),pch=20,main = "Correlation Between Age and Cholesterol Level")
+# Correlation coefficient
+# RUBRIC
+# 1 point for the calculation using built-in R function 
+cor(heart_disease_male$age,heart_disease_male$chol)
+```
+
+\newpage
+
+
+# Question 6
+
+Load and explore the OJ data set from the ISLR library. First, install the ISLR package. *Hint: you will need to comment out this line in your RMarkdown file to avoid error messages.*
+
+
+__Answer__
+
+
+Use eval = FALSE in the R chunk option to stop executing this cell.
+
+```{r, eval=FALSE}
+# RUBRIC:
+# 1 point for installing the package
+install.packages("ISLR")
+```
+
+
+\newpage
+
+## 6(a) (3 points)
+
+Show the dimension of the data set
+
+```{r}
+# RUBRIC:
+# 1 point for loading the library
+library("ISLR", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+# 1 point for loading the dataset
+OJ_data=OJ
+# 1 point for showing the dimension
+dim(OJ_data)
+```
+
+\newpage
+
+
+## 6(b) (3 points)
+
+You recently learned that all of the data from StoreID==2 has been corrupted. Replace `StoreID==2` with NA and use the `na.omit()` function to remove all lines with the missing value. How many rows are remaining? *Use this cleaned data set for the remaining questions.*
+
+```{r, message=FALSE}
+# RUBRIC:
+# 1 point for replacing with NA
+OJ_data$StoreID[OJ_data$StoreID==2]=NA
+# 1 point for removing the missing values
+OJ_data_clean=na.omit(OJ_data)
+# 1 point for showing the final number of rows
+nrow(OJ_data_clean)
+```
+
+
+
+\newpage
+
+## 6(c) (1 point)
+
+Use the `pairs()` function in base R to create pairwise scatter plots of columns 12 to 17. 
+
+__Answer__
+
+```{r}
+# pairs plot
+pairs(OJ_data_clean[,12:17],main="Scatter Plots of Col 12 to 17")
+```
+
+\newpage
+
+## 6(d) (1 point)
+
+Visually inspect the plot generated in the last question, what are the column names of two columns with a strong negative correlation?
+
+__Answer__
+1) Price Difference and Pct Disc MM. 2) Sale Price CH and PCT Disc CH
+\newpage
+
+## 6(e) (3 points)
+
+What proportion of the entries had a PctDisc of greater than 0.15 for either MM or CH?
+
+__Answer__
+
+```{r}
+# RUBRIC:
+# 2 points for creating a binary variable satisfying the condition 
+OJ_data_PctDisc=OJ_data_clean$PctDiscMM>0.15|OJ_data_clean$PctDiscCH>0.15
+# 1 point for calculating the percentage
+sum(OJ_data_PctDisc==T)/nrow(OJ_data_clean)
+```
+
+\newpage
+
+## 6(d) (8 points)
+
+Overlay two histograms of `DiscMM` and `DiscCH` to visualize the discounts on both orange juices. Plot DiscMM as red and DiscCH and blue. You should be able to see the overlap. Use a meaningful xlabel and title. Include a legend.
+
+__Answer__
+
+
+```{r}
+# RUBRIC:
+# 1 point for histogram for DiscMM
+# 1 point for setting the colors
+# 1 point for title
+# 1 point for x-axis label
+
+# 1 point for histogram for DiscMM
+# 1 point for setting the colors
+# 1 point for overlay
+# 1 point for legend
+mycol_blue <- rgb(0, 0, 255, max = 255, alpha = 125, names = "blue50")
+mycol_red <- rgb(255, 0, 0, max = 255, alpha = 125, names = "red50")
+hist(OJ_data_clean$DiscCH,xlab = "Disc", main="Histogram of DiscCH and DiscMM",col = mycol_blue)
+hist(OJ_data_clean$DiscMM,col = mycol_red,breaks = 20,add=T,ylim= 1)
+legend(x=0.3,y=600,legend = c("DiscCH","DiscMM"),fill = c(mycol_blue,mycol_red))
+```
