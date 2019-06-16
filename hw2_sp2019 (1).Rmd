@@ -1,0 +1,619 @@
+---
+title: "Home Work 2"
+author:
+- 'Submitted by: YOUR NAME HERE'
+- 'UNI: Your UNI here'
+date: 'Posted: 2/8/2019 | Due: 2/18/2019'
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    number_sections: no
+subtitle: (APANPS5335 Machine Learning)
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+
+__Instructions__: Please submit both the RMarkdown file and a PDF version. Make sure to complete the name and UNI in the header of this document.
+
+\newpage
+
+# Question 1 (9 points)
+
+Fill in the figure below. When you run the .Rmd file, please make sure to update the path to the image file.
+
+![](/Users/enayetraheem/Google Drive/teaching/Columbia/Spring2019_MachineLearning/hw2/figures/bvt.png)
+
+__Answer__
+
+```{r}
+# RUBRIC: 1 points for each
+
+# Write your answer beside 
+
+# A) test MSE
+# B) estimator variance 
+# C) squared bias
+# D) flexibility level corresponding to the smallest test MSE
+# E) interpretability, mean squared error
+# F) mean squared error estimater
+# G) variance of the estimator: how muchthe estimator varies with a new dataset
+# H) bias of the estimater: error caused by difference between expected estimator and true function
+# I) irriducable error
+
+```
+
+\newpage
+
+# Question 2 (8 points)
+
+Let's dig into specific details about what bias-variance trade-off is and is not. 
+
+# 2(a)
+
+What is the expectation $E[(y - \hat{f}(x))^2]$ over?
+
+__Answer__
+
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+# the prediction of a new outcome at point x0
+```
+
+# 2(b)
+Does the bias-variance trade-off tell us about a specific model $f$ or about an algorithm (i.e., kNN, linear regression) and model class (i.e., k=3)?
+
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+# No, in a rea-life situation in which f is unobserved, it is generally not possible to explicitely compute the test MSE, Bias, or Variance for a statical learning method.
+```
+
+# 2(c)
+
+Is the bias-variance trade-off valid for classification? Explain.
+
+__Answer__
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+
+# no bias-variance trade-off is applicable for numerical variables, not discrete variables.
+
+```
+
+# 2(d)
+
+What do we expect will happen to bias and variance when there is a small sample size and a flexible model?
+
+__Answer__
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+
+#low bias, high variance since model is flexible, it will have low bias since it will fit most of the values and variance will be high when the same models is used for prediction.
+
+```
+
+# 2(e)
+
+What do we expect will happen to bias and variance when there is a large sample size and a restrictive model?
+
+__Answer__
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+
+# high bias, small variance since model is restrictive, it will have high bias since it will fit most of the values and variance will be low when the same models is used for prediction.
+```
+
+# Question 3 (22 points)
+
+In simple linear regression, we model our prediction $\hat{y}$ as a function of $x$.
+
+$$
+\hat{y}_i = \beta_1 x_i + \beta_0 + \epsilon_i
+$$
+
+
+# 3(a)
+
+What are the maximum likelihood estimates for $\beta_1$ and $\beta_0$?
+
+```{r}
+# RUBRIC: 2 points
+
+```
+
+__Answer__
+
+
+Beta1=sum((x-mean(x))*sum(y-mean(y)))/sum(x-mean(x))^2
+Beta0=mean(y)-Beta1
+
+# 3(b)
+
+Create functions to calculate $\beta_1$ and $\beta_0$ given an $x$ vector and a $y$ vector using the MLE equations you found above.
+
+__Answer__
+
+```{r}
+# RUBRIC: 4 points
+
+# Write your answer below 
+
+x=sample(1:100,50)
+y=sample(100:200,50)
+length(y)
+
+getEstimates <- function(x, y) {
+  for (i in length(y))
+  Beta1=sum((x-mean(x))*sum(y-mean(y)))/sum(x-mean(x))^2
+  Beta0=mean(y)-Beta1
+  print(Beta1)
+  print(Beta0)
+}
+
+getEstimates(x,y)
+```
+
+# 3(c)
+
+Load the `prostate_cancer.csv` data set from Canvas. Use a scatterplot to plot compactness `x` against symmetry `y`. Label your figure appropriately.
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+setwd("~/Desktop/APANPS5335")
+ProstateCancer=read.csv("prostate_cancer.csv")
+library("ggplot2", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+plot(ProstateCancer$compactness,ProstateCancer$symmetry,xlab = 'Compactness',xlim= c(0,0.35),ylab = 'Symmetry',ylim = c(0,0.3), cex=0.5, main = 'Correlation of Prostate Cancer Compactness and Symmetry')
+
+```
+
+# 3(d)
+
+Use the maximum-likelihood estimates of $\beta_0$ and $\beta_1$ given the data (compactness `x` and symmetry `y`). Plot the data and the best-fit line using these estimates. As always, label your figure appropriately.
+
+```{r}
+# RUBRIC: 5 points
+
+# Write your answer below 
+plot(ProstateCancer$compactness,ProstateCancer$symmetry,xlab = 'Compactness',xlim= c(0,0.35),ylab = 'Symmetry',ylim = c(0,0.3), cex=0.5, main = 'Correlation of Prostate Cancer Compactness and Symmetry')
+abline(lm(ProstateCancer$symmetry~ProstateCancer$compactness))
+
+```
+
+
+# 3(e)
+
+Give a 95\% confidence interval for $\beta_0$ and $\beta_1$.
+
+```{r}
+# RUBRIC: 4 points
+
+# Write your answer below 
+  Beta1=sum((x-mean(x))*sum(y-mean(y)))/sum(x-mean(x))^2
+
+std1= function(x) sd(x)/sqrt(length(x))
+ConfidenceInterval_b1_l = Beta1 - 2*std1(ProstateCancer$compactness)*(Beta1) 
+ConfidenceInterval_b1_u = Beta1 + 2*std1(ProstateCancer$compactness)*(Beta1)
+
+```
+
+
+# 3(f)
+
+Use the built in R `lm()` function to fit a linear model `lmFit`. Print the summary statistics for the model. Plot the data and use the builtin `abline()` function to plot the best fit line.
+
+
+```{r}
+# RUBRIC: 4 points
+
+# Write your answer below 
+
+lmComSym=lm(ProstateCancer$compactness~ProstateCancer$symmetry)
+summary(lmComSym)
+plot(lmComSym)
+abline(lm(ProstateCancer$symmetry~ProstateCancer$compactness))
+
+```
+
+# 3(g)
+
+Use built in R `predict()` function to print the 95\% prediction interval of the symmetry for a tumor with compactness $x=0.23$.
+
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+a=lm(ProstateCancer$symmetry~ProstateCancer$compactness)
+predict(a,data.frame(compactness=0.23),interval='predict',level=0.95)  
+
+# Somehting has gone wrong and R computes 100 times. I don't know why
+```
+
+# 3(h)
+
+What assumption did the R `predict()` function make in order to produce the prediction interval in the previous question? In general, does R overestimate, underestimate, or correctly estimate the true  prediction interval?
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+
+```
+
+
+# Question 4 (16 points)
+
+We will explore multiple linear regression using the ISLR Auto data set. 
+
+# 4(a)
+
+Which of the variables are continuous?
+
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+library("ISLR", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+AutoData=Auto
+# MPG, displacement, horsepower, weight,acceleration
+
+
+```
+
+# 4(b)
+
+Produce a scatterplot matrix with the continuous variables. Which two variables are most correlated with mpg?
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+pairs(~mpg+displacement+horsepower+weight+acceleration,data=AutoData)
+
+AutoDataContinuous=data.frame(AutoData$mpg,AutoData$displacement,AutoData$horsepower,AutoData$weight,AutoData$acceleration)
+
+cor(AutoDataContinuous)
+
+# Wieght and Displacement at 93.29944%
+
+```
+
+# 4(c)
+
+Fit a multiple linear regression model to predict mpg using only the continuous variables and produce a summary.
+
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+
+MLRAutoData=lm(mpg~displacement+horsepower+weight+acceleration,data=AutoData)
+print(MLRAutoData)
+
+```
+
+# 4(d)
+
+Using the summary statistics $F, r^2, p$, explain whether or not there is a relationship between the predictors and the response variable. Which, if any, of the predictors are significant?
+
+
+```{r}
+# RUBRIC: 3 points
+
+# Write your answer below 
+
+#F-Statistic: High F statistic value shows strong relationship. 
+#R^2:0.707 fairly strong linear relationship between predictors and response
+#P Value: Weight and Horsepower are good predictors due to low P values (>.05)
+
+```
+
+# 4(e)
+
+Plot the true mpg against the estimated mpg. Plot the diagonal line. Where does the model seem to underestimate mpg? Where does the model seem to overestimate mpg?
+
+```{r}
+# RUBRIC: 3 points
+
+# Write your answer below 
+PredMPG=predict(MLRAutoData,AutoData)
+MPGCompare=data.frame(PredMPG,AutoData$mpg)
+
+
+plot(PredMPG,AutoData$mpg) 
+abline(lm(AutoData$mpg~PredMPG))
+  
+
+```
+
+# 4(f)
+
+Should we have used a more flexible model? If so, what kind?
+
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+#Yes, we may apply a nultiple linear regression 
+
+```
+
+# 4(g)
+
+Produce diagnostic plots of your model using `plot(fit)`. Can you detect any outliers? Justify eliminating those outliers.
+
+```{r}
+# RUBRIC: 3 points
+
+# Write your answer below 
+plot(MLRAutoData)
+
+#There are outliers, 
+
+#Will not remove, upon visual observation of the dataset, values within reasonable range
+
+```
+
+# Question 5 (8 points)
+
+We will use the following data to explore kNNs. When you run the .Rmd file, please make sure to update the path to the image file.
+
+![](/Users/enayetraheem/Google Drive/teaching/Columbia/Spring2019_MachineLearning/hw2/figures/knn.png)
+This figure uses the following data:
+
+```{r}
+x <- c(1, 1, 2, 2, 2, 6, 6)
+y <- c(4, 2, 6, 5, 1, 5, 1)
+color <- c('black', 'red', 'red', 'blue', 'blue', 'red', 'red')
+```
+
+# 5(a)
+
+Compute the Euclidean distance for each point with respect to the unlabeled point, $U$.
+
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+library(class)
+
+xy=data.frame(x,y)
+dist(xy)
+
+```
+
+# 5(b)
+
+What is the kNN label for $U$ when $k=1$? When $k=3$?
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+#k=1: U would be blue since the nearest neighbor to U is (2,5), which is blue
+#k=3: U would be Red since the nearest 3 neighbors consists of 2 reds and 1 blue, U would adapt the characteristic of red dots.
+
+```
+
+# 5(c)
+
+It's also possible to calculate kNN using decision functions different from majority vote. One common scheme is to take weighted votes as a function of `distance`. The procedure is as follows: 
+
+- Get the k nearest neighbors.
+- Compute the weight for each red neighbor and sum.
+- Compute the weight for each blue neighbor and sum.
+- Choose the label with larger score.
+
+There are three common weight functions:
+
+- Inverse Euclidean Distance: $\|v - u\|^{-1}$
+- Inverse Square: $\|v - u\|^{-2}$
+- Gaussian Functional Distance: $e^{-\alpha \|v - u\|^2}$
+
+Using R, give the kNN for $k=6$ using weighted voting for each of the following weight functions: 
+
+- Inverse Euclidean Distance
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+
+```
+
+- Inverse Square
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+
+```
+
+- Gaussian Functional Distance with $\alpha = 0.2$
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+
+```
+
+- Gaussian Functional Distance with $\alpha = 0.4$
+	
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+
+```
+
+# Question 6 (14 points)
+
+__Prostate Cancer Dataset__ Load package `datasets` and load the Prostate Cancer data set *(attached with the homework on canvas)*. We will try to predict the abnormal growth of cells using kNN.
+
+# 6(a)
+
+Normalize the data. The scale used for each of the values of the numeric features may be different, hence normalizing data is a good practice. Use the formula for each numeric column `c`, `(c - min(c)/max(c)-min(c))`.
+
+```{r}
+# RUBRIC: 1 point
+
+# Write your answer below 
+
+
+Normalization= function(x) {
+  return(((x-min(x))/(max(x)-min(x))))
+}
+
+NormProstateCancer=as.data.frame(lapply(ProstateCancer[3:10], Normalization))
+
+NormProstateCancer=cbind(NormProstateCancer,ProstateCancer$diagnosis_result)
+```
+
+# 6(b)
+
+Divide the data into training and testing sets. We will use a pseudo random number to "randomly" divide the data. This produces a deterministic split with the properties of a random split. Pseudo random numbers are often helpful for debugging. To set the seed, use the command `set.seed(1)`, where 1 is the seed. Now use the function sample.int to make a new ordering for your data. Use the first 65 reordered observations as your training set and the last 35 as your testing set.
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+set.seed(1)
+TrainProstateCancer=NormProstateCancer[1:65,]
+TestProstateCancer=NormProstateCancer[66:100,]
+
+```
+
+# 6(c)
+
+Use the function knn from the package class with `k = 10` to classify the data. How many are misclassified on the the testing set?
+
+```{r}
+# RUBRIC: 4 points
+
+# Write your answer below 
+
+detach("package:class", unload=TRUE)
+library("class", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+
+KNNProstateCancer=knn(TrainProstateCancer[,-9],TestProstateCancer[,-9],cl=TrainProstateCancer$`ProstateCancer$diagnosis_result`, k=10)
+
+CompareTrainTestProstateCancer=table(TestProstateCancer[,9],KNNProstateCancer)
+
+```
+
+# 6(d)
+
+Do this for `k = 1,2,3,4,5,6,7,8,9,10,20,30,40,50`. (I would suggest writing a script that loops over the values of `k`.) How many are misclassified on the testing set for each value?
+
+```{r}
+# RUBRIC: 2 points
+
+# Write your answer below 
+k=c(1,2,3,4,5,6,7,8,9,10,20,30,40,50)
+
+  for (i in k){
+  KNNProstateCancer=knn(TrainProstateCancer[,-9],TestProstateCancer[,-9],cl=TrainProstateCancer$`ProstateCancer$diagnosis_result`, k=i)
+  CompareTrainTestProstateCancer=table(TestProstateCancer[,9],KNNProstateCancer)
+  print(CompareTrainTestProstateCancer)
+}
+
+```
+
+# 6(e)
+
+Reset the seed with `set.seed(2)` and generate 4 more random train- ing/testing sets. Run knn for `k = 1,2,3,4,5,6,7,8,9,10,20,30,40,50` on each of these new training/testing sets. For each set, including the original, how many values are misclassified, relate `k` to the number misclassified.
+
+```{r}
+# RUBRIC: 5 points
+
+# Write your answer below 
+set.seed(2)
+#1--------------------------------------------------------------
+TrainProstateCancer1=NormProstateCancer[1:60,]
+TestProstateCancer1=NormProstateCancer[61:100,]
+
+k = c(1,2,3,4,5,6,7,8,9,10,20,30,40,50)
+
+  for (i in k){
+KNNProstateCancer1=knn(TrainProstateCancer1[,-9],TestProstateCancer1[,-9],cl=TrainProstateCancer1$`ProstateCancer$diagnosis_result`, k=i)
+  CompareTrainTestProstateCancer1=table(TestProstateCancer1[,9],KNNProstateCancer1)
+  print(CompareTrainTestProstateCancer1)
+}
+
+#2--------------------------------------------------------------
+TrainProstateCancer2=NormProstateCancer[1:70,]
+TestProstateCancer2=NormProstateCancer[71:100,]
+
+for (i in k){
+KNNProstateCancer2=knn(TrainProstateCancer2[,-9],TestProstateCancer2[,-9],cl=TrainProstateCancer2$`ProstateCancer$diagnosis_result`, k=i)
+  CompareTrainTestProstateCancer2=table(TestProstateCancer2[,9],KNNProstateCancer2)
+  print(CompareTrainTestProstateCancer2)
+}
+
+#3--------------------------------------------------------------
+
+TrainProstateCancer3=NormProstateCancer[1:80,]
+TestProstateCancer3=NormProstateCancer[81:100,]
+
+for (i in k){
+KNNProstateCancer3=knn(TrainProstateCancer3[,-9],TestProstateCancer3[,-9],cl=TrainProstateCancer3$`ProstateCancer$diagnosis_result`, k=i)
+  CompareTrainTestProstateCancer3=table(TestProstateCancer3[,9],KNNProstateCancer3)
+  print(CompareTrainTestProstateCancer3)
+}
+
+#4--------------------------------------------------------------
+TrainProstateCancer4=NormProstateCancer[1:90,]
+TestProstateCancer4=NormProstateCancer[01:100,]
+
+for (i in k){
+KNNProstateCancer4=knn(TrainProstateCancer4[,-9],TestProstateCancer4[,-9],cl=TrainProstateCancer4$`ProstateCancer$diagnosis_result`, k=i)
+  CompareTrainTestProstateCancer4=table(TestProstateCancer4[,9],KNNProstateCancer4)
+  print(CompareTrainTestProstateCancer4)
+}
+
+```
+
+
+
+
+
+
+
+
+	
+	
