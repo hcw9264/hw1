@@ -1,0 +1,617 @@
+---
+title: "Home Work 3"
+author:
+- 'Submitted by: Huan Cheng Wang'
+- 'UNI: HW2647'
+date: '2/26/2019 | Due: 3/5/2019'
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    number_sections: no
+subtitle: (APANPS5335 Machine Learning)
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=80))
+```
+
+
+__Instructions__: Please submit both the RMarkdown file and a PDF version. Make sure to complete the name and UNI in the header of this document.
+
+\newpage
+
+# Question 1 (9 points)
+For the following question, plese answer True/False or short answer as appropriate. 
+
+## 1.1 (1 point)
+
+Is logistic regression a regression model or a classification model? Justify you answer.
+
+__Answer:__
+# Both: logistics regression is typically used with a qualitative response. As such it is often used as a classification method. But since it estimates class probabilities, it can be thought of as a regression method as well (An Introduction to Statistical Learning, page 28-29)
+
+## 1.2 (1 point)
+
+Can mean-square error be applied to logistic regression output to compare with target? Explain why.
+
+__Answer:__
+# No, the hypothesis is non-linear (sigmoid function), which makes the square error function to be non-convex. 
+# categorical value!!
+
+## 1.3 (1 point)
+
+KNN can be used for both classification and regression. True or False. Explain
+
+__Answer:__
+
+True
+# KNN classifier first identifies the K points in the training data that are closest to x0, represented by N0.
+
+
+## 1.4 (1 point)
+
+What estimation technique logistic regression uses to obtain the estimates of the parameters? 
+
+__Answer:__
+# parameter estimation 
+
+
+## 1.5 (1 point)
+
+Manhattan distance can be used for continuous variables? True or False
+
+
+__Answer:__
+# False: Manhattan distance assumes independent attributes. In particular, no continuous linear independence. If you have a discrete variable, Manhattan is the number of steps you have to do there.
+
+# Question 2 (3 points)
+
+Consider a following model for logistic regression: 
+\[P (y = 1 | x,\, w)= g(w_{0} + w_{1}x)\]
+where g(z) is the logistic function.
+\[g(z) = \frac{1}{(1+e^{-z})}\]
+
+In the above equation, the $P(y =1|x, w)$ can be viewed as a function of x, that we can get by changing the parameters w.
+
+Given the equation for the logistic function, what is the minimal value that $y$ can take? What is the maximal value y can take? Do $w_0$ or $w_1$ affect the max and min? How does $w_0$ and $w_1$ affect the shape of the function?
+
+__Answer:__
+# max value of y would be 1 and min value would be 0
+# w0 and w1 does not affect the min and max values because min and max values cannot change
+
+# Question 3 (12 points)
+
+We will explore logistic regression using the ISLR "Default" data set. 
+
+
+```{r}
+# load the data
+
+library(ISLR)
+df <- Default
+head(df)
+dim(df)
+
+```
+
+## 3.1 (1 point)
+
+Split the data in the train - test split
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+set.seed(1)
+
+dfShuffle= df[sample(nrow(df)),]
+summary(dfShuffle)
+nrow(dfShuffle)
+
+TrainISLR=dfShuffle[1:8000,]
+TestISLR=dfShuffle[8001:10000,]
+
+```
+
+## 3.2 (1 point)
+
+Explore which of the variables are useful for our model as predictors? Create a density plot to understand data and answer this question.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+str(TrainISLR)
+
+a=density(TrainISLR$balance) # returns the density data 
+plot(a) # plots the results
+
+b=density(TrainISLR$income) # returns the density data 
+plot(b) # plots the results
+
+```
+
+
+
+## 3.3 (2 points)
+
+Fit a logistic regression model on useful predictor from question above and produce a model summary.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+library(ggplot2)
+library("cowplot", lib.loc="/Library/Frameworks/R.framework/Versions/3.4/Resources/library")
+
+glmDefaultBalance=glm(default~balance,data=TrainISLR,family="binomial")
+
+summary(glmDefaultBalance)
+
+```
+
+
+## 3.4 (2 points)
+
+Predict the response for the `defaults` using model created in above question. Convert this predictions to classification "Yes" or "No" using probabilities $>=0.5$ as "yes" and $< 0.5$ as "no".
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+library(Matrix)
+library(foreach)
+library(glmnet)
+
+TrainISLR$ProbDefault=predict(glmDefaultBalance,type = "response")
+TrainISLR$Response=ifelse(TrainISLR$ProbDefault>=0.5,1,0)
+
+TrainISLR$defaultVal=ifelse(TrainISLR$default=='Yes',1,0)
+```
+
+## 3.5 (1 point)
+
+Create confusion matrix using table in R on the train set and the test set.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+library(caret)
+
+TestISLR$ProbDefault= predict(glmDefaultBalance,newdata =TestISLR, type = "response")
+
+TestISLR$Response = ifelse(TestISLR$ProbDefault>=0.5,1,0)
+
+TestISLR$defaultVal=ifelse(TestISLR$default=='Yes',1,0)
+
+levels(TestISLR$Response)=factor(c("0.5","1","0"))
+levels(TrainISLR$Response)=factor(c("0.5","1","0"))
+
+levels(TestISLR$defaultVal)=factor(c("0.5","1","0"))
+levels(TrainISLR$defaultVal)=factor(c("0.5","1","0"))
+
+##confusion matrices
+confusionMatrix(table(TrainISLR$Response, TrainISLR$defaultVal))
+confusionMatrix(table(TestISLR$Response, TestISLR$defaultVal))
+
+```
+
+install.packages("caret")
+
+## 3.6 (1 point)
+
+Calculate error rate for train and test set using above created confusion matrix.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+#######calculate error/misclassification rate
+(186 + 37)/(7694+37+186+83)
+(46 + 9)/(1927+9+46+18)
+
+```
+
+# 3.7 (2 points)
+
+Use confusion matrix function from library `caret` or any package of your choice. What are sensitivity and specificity values? Explain sensitivity and specificity. Please note, different R package use different way to input the data. Make sure you are following the instructions in their help document to properly put which variables to go to the rows and which one to column. 
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+TrainISLR$defaultVal=ifelse(TrainISLR$default == "No",0,1)
+
+ConfMatrix=confusionMatrix(table(TrainISLR$Response, TrainISLR$defaultVal))
+
+
+```
+
+## Sensitivity: the % of true defaulters identified by the test, 
+## Specificity: the % of non-defaulters correctly identified
+
+
+# 3.8 (2 points)
+
+Create ROC curve for our predictions. Calculate accuracy for our model predictions.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+library(ROCR)
+
+ROCRpred=prediction(as.numeric(TrainISLR$Response), as.numeric(TrainISLR$defaultVal)) #when leveled, the values had turned to string, so converted them to num
+ROCRperf=performance(ROCRpred, 'tpr','fpr')
+plot(ROCRperf, colorize=TRUE) #this is just adding color
+
+```
+ROCRpred=prediction(TrainISLR$Response, TrainISLR$defaultVal)
+ROCRperf=performance(ROCRpred, 'tpr','fpr')
+plot(ROCRperf)
+
+ROCRpred=prediction(TrainISLR$Response, TrainISLR$defaultVal)
+ROCRperf=performance(ROCRpred, 'tpr','fpr')
+plot(ROCRperf
+
+# Question 4 (12 points)
+
+When modeling, we want predictor variables that are correlated with the response variable. We do not want predictors correlated with each other. Interpredictor correlation may result in collinearity (also called multicollinearity), and can destabilize a model. If two predictor variables are nearly identical, our $\beta$ coefficients may change arbitrarily and cause the standard error (SE) to increase, hiding significant relationships between response and predictors. We can test for collinearity by computing a Variance Inflation Factor (VIF), which measures the association (correlation) among the predictor variables - excluding the response variable. It is given by:
+
+$$
+VIF = \frac{1}{(1-R^2_j)}
+$$
+
+$R^2$ measures how much one predictor is correlated with other predictors. When a predictor is totally uncorrelated (independent of) with others, then VIF = 1. As predictors approach complete collinearity (or extreme multicollinearity) with other predictors,VIF  $\rightarrow~\infty$.
+
+Some people believe inter-predictor correlation may be too high when VIF becomes greater than 2.5, while others flag the correlation as problematic when VIF becomes greater than 10. Here, we will use VIF $> 10.$
+
+## 4.1 (5 points)
+
+Below, we will calculate VIF in R using predictors in the data `prostate_cancer.csv`. This is the same data as we used in previous homework assignment. Start with the predictor variable `smoothness`.
+
+Compute the coefficient of determination $R^2_j$ for  by regressing (using R's `lm()` function) smoothness over
+the other predictors in `prostate_cancer.csv`, but not for the response variable `diagnosis_result`.
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+setwd("~/Desktop/APANPS5335")
+ProstateCancer=read.csv("prostate_cancer.csv")
+
+### **Multiple R-squared:  0.3022,	Adjusted R-squared:  0.2491
+ProstateCancerlm=lm(ProstateCancer$smoothness~ProstateCancer$radius+ProstateCancer$texture+ProstateCancer$perimeter+ProstateCancer$area+ProstateCancer$compactness+ProstateCancer$symmetry+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm)
+##VIF
+1/(1-0.3022)
+
+```
+
+
+## 4.2 (5 points)
+
+Once you determine $R^2_j$ for `smoothness`, compute smoothness's VIF using the above formula. Separately, compute VIF for the other predictor variables. (Again, don't use the response variable `diagnosis_result`.)
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+### **Multiple R-squared:  0.1018,	Adjusted R-squared:  0.03341 
+ProstateCancerlm2=lm(ProstateCancer$radius~ProstateCancer$smoothness+ProstateCancer$texture+ProstateCancer$perimeter+ProstateCancer$area+ProstateCancer$compactness+ProstateCancer$symmetry+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm2)
+1/(1-0.1018)
+
+### **Multiple R-squared:  0.04846,	Adjusted R-squared:  -0.02394 
+ProstateCancerlm3=lm(ProstateCancer$texture~ProstateCancer$radius+ProstateCancer$smoothness+ProstateCancer$perimeter+ProstateCancer$area+ProstateCancer$compactness+ProstateCancer$symmetry+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm3)
+1/(1-0.04846)
+
+
+### **Multiple R-squared:  0.9756,	Adjusted R-squared:  0.9738, p-value: < 2.2e-16** 
+ProstateCancerlm4=lm(ProstateCancer$perimeter~ProstateCancer$texture+ProstateCancer$radius+ProstateCancer$smoothness+ProstateCancer$area+ProstateCancer$compactness+ProstateCancer$symmetry+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm4)
+1/(1-0.9756)
+
+### **Multiple R-squared:  0.9672,	Adjusted R-squared:  0.9647, p-value: < 2.2e-16**
+ProstateCancerlm5=lm(ProstateCancer$area~ProstateCancer$perimeter+ProstateCancer$texture+ProstateCancer$radius+ProstateCancer$smoothness+ProstateCancer$compactness+ProstateCancer$symmetry+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm5)
+## VIF
+1/(1-0.9672)
+
+
+### **Multiple R-squared:  0.8967,	Adjusted R-squared:  0.8889, p-value: < 2.2e-16**
+ProstateCancerlm6=lm(ProstateCancer$compactness~ProstateCancer$area+ProstateCancer$perimeter+ProstateCancer$texture+ProstateCancer$radius+ProstateCancer$smoothness+ProstateCancer$symmetry+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm6)
+##VIF
+1/(1-0.8967)
+
+### **Multiple R-squared:  0.5225,	Adjusted R-squared:  0.4861
+ProstateCancerlm7=lm(ProstateCancer$symmetry~ProstateCancer$compactness+ProstateCancer$area+ProstateCancer$perimeter+ProstateCancer$texture+ProstateCancer$radius+ProstateCancer$smoothness+ProstateCancer$fractal_dimension)
+summary(ProstateCancerlm7)
+1/(1-0.5225)
+
+### **Multiple R-squared:  0.8335,	Adjusted R-squared:  0.8208
+ProstateCancerlm8=lm(ProstateCancer$fractal_dimension~ProstateCancer$symmetry+ProstateCancer$compactness+ProstateCancer$area+ProstateCancer$perimeter+ProstateCancer$texture+ProstateCancer$radius+ProstateCancer$smoothness)
+summary(ProstateCancerlm8)
+1/(1-0.8335)
+```
+
+
+## 4.3 (2 points)
+
+Do your results raise concerns about collinearity within this dataset? If so, what approach might you take to resolve your concerns?
+
+__Answer:__
+
+the VIF results for perimeter and area variable do raise concerns about 
+collinearity withing the dataset. We can remove both these variables or just keep one
+of them and then run the VIF again to check the results. If the VIF comes less than 
+10
+
+# Question 5 (23 points)
+
+Download the file `iris.csv` from Canvas. The Iris dataset was used in R.A. Fisher's classic 1936 paper, The Use of Multiple Measurements in Taxonomic Problems, and can also be found on the UCI Machine Learning Repository.
+
+It includes three iris species with 50 samples each as well as some properties about each flower. One flower species is linearly separable from the other two, but the other two are not linearly separable from each other. 
+
+Our goal would be to classify iris plants into three species in this dataset.
+
+
+## 5.1 (1 point)
+
+Divide these data into a training set and a testing set using createDataPartition from caret library in R. Perform a logistic regression using the training set.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+setwd("~/Desktop/APANPS5335")
+IRIS_Data=read.csv("iris.csv")
+
+library(ggplot2)
+library(GGally)
+intrain=createDataPartition(y=IRIS_Data$Species,p=0.7,list=FALSE)
+TrainIris= IRIS_Data[intrain,]
+TestIris= IRIS_Data[-intrain,]
+
+ggpairs(TrainIris)
+irismodel <- glm( Species~SepalLengthCm +SepalWidthCm, data = TrainIris, family = "binomial")
+summary(irismodel)
+```
+library(caret)
+setwd("~/Desktop/APANPS5335")
+IRIS_Data=read.csv("iris.csv")
+
+intrain=createDataPartition(y=IRIS_Data$Species,p=0.7,list=FALSE)
+TrainIris= IRIS_Data[intrain,]
+TestIris= IRIS_Data[-intrain,]
+
+glmIRIS=glm(Species~SepalLengthCm+SepalWidthCm+PetalLengthCm+PetalWidthCm,data=TrainIris,family = binomial(link = 'logit'))
+
+TrainIris$Setosa <- as.numeric(TrainIris$Species == "setosa")
+TrainIris$versicolor=as.numeric(TrainIris$Species=="versicolor")
+TrainIris$virginica=as.numeric(TrainIris$Species=="virginica")
+
+TrainSetosaglm=glm(Setosa~SepalLengthCm+SepalWidthCm+PetalLengthCm+PetalWidthCm,data=TrainIris,family = "binomial")
+Trainversicolorglm=glm(versicolor~SepalLengthCm+SepalWidthCm+PetalLengthCm+PetalWidthCm,data=TrainIris,family = "binomial")
+Trainvirginicaglm=glm(virginica~SepalLengthCm+SepalWidthCm+PetalLengthCm+PetalWidthCm,data=TrainIris,family = "binomial")
+
+## 5.2 (2 points)
+
+Compute numerical and graphical summaries of the data. 
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+summary(TrainIris)
+levels(TrainIris$Species)
+
+plot(TrainIris)
+
+plotirisPetal=ggplot(data=TrainIris, aes(x = PetalLengthCm, y = PetalWidthCm))+geom_point(aes( color=Species)) +xlab("Petal_Length") +ylab("Petal_Width") +ggtitle("Petal")+ geom_smooth(method="lm")
+plotirisPetal
+
+TrainIrisglm=glm(Species~.,data = TrainIris,family = "binomial")
+summary(TrainIrisglm)
+
+```
+
+
+## 5.3 (1 point)
+
+What patterns, if any, are present? Which of the predictors, if any, appear to be statistically significant?
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+
+```
+
+Visually, PetalLengthCm and PetalWidthCm seems highly postitively correlated. A more thorough visualization of the scatter plot for Petal dimensions are grouped tightly.
+
+P-value shows one for some reason, cannot determin statistical significance from summary
+
+## 5.4 (2 points)
+
+Compute accuracy and a confusion matrix.
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+glmIRIS=glm(Species~SepalLengthCm+SepalWidthCm+PetalLengthCm+PetalWidthCm,data=TrainIris,family = binomial(link = 'logit'))
+
+TestIris$Species= predict(glmIRIS,newdata =TestIris, type = "response")
+TestIris$Response = ifelse(TestIris$SepalWidthCm>=0.5,1,0)
+
+TestIris$defaultVal=ifelse(TestIris$Species=='Yes',1,0)
+
+levels(TestIris$Response)=factor(c("0.5","1","0"))
+##levels(TrainIris$Response)=factor(c("0.5","1","0")) ##Error: attempt to set an attribute on NULL
+
+levels(TestIris$defaultVal)=factor(c("0.5","1","0"))
+##levels(TrainIris$defaultVal)=factor(c("0.5","1","0")) ##Error: attempt to set an attribute on NULL
+
+##confusion matrices doesn't run after countless attempts 
+###confusionMatrix(table(TrainIris1$Response, TrainIris1$defaultVal))
+###confusionMatrix(table(TestIris1$Response, TestIris1$defaultVal))
+
+## accuracy function
+
+IrisTrainPred= ifelse(predict(irismodel, type = "response") > 0.5, "Yes", "No")
+IrisTrainTable =table(predicted = IrisTrainPred, actual = TrainIris$Species)
+IrisTrainTable
+
+
+ClassError= function(actual, predicted) { mean(actual != predicted)}
+ClassError(actual = TrainIris$Species, predicted = IrisTrainPred)
+```
+
+
+## 5.5 (2 points)
+
+Fit your logistic model to the test data. Compute accuracy and a confusion matrix. Again, explain the confusion matrix. How do your results here compare with those on the training set?
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+TrainIrisglm=glm(Species~.,data = TrainIris,family = "binomial")
+summary(TrainIrisglm)
+TestIrisglm=glm(Species~.,data = TestIris,family = "binomial")
+summary(TestIrisglm)
+## P-Value=1 for unknow reasons
+```
+
+## 5.6 (5 points)
+
+Repeat your analysis using Linear Discriminant Analysis (LDA). That is, fit the data using linear discriminant analysis to the training data and make predictions using test data.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+library(MASS)
+set.seed(555)
+ind=sample(2,nrow(IRIS_Data),replace = T,prob = c(0.75,0.25))
+TrainIris2=IRIS_Data[ind==1,]
+TestIris2=IRIS_Data[ind==2,]
+## LDA fucntion
+IrisTrainlda=lda(Species~., TrainIris2)
+IrisTrainlda
+
+```
+
+## 5.7 (5 points)
+
+Repeat your analysis using Quadratic Discriminant Analysis (QDA). That is, fit the data using quadratic discriminant analysis to the training data and make predictions using test data.
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+## QDA fucntion
+Irisqda=qda(Species~SepalLengthCm +SepalWidthCm, data= TrainIris)
+Irisqda
+
+IrisqdaClass <- predict(Irisqda, TestIris)$class
+table(IrisqdaClass, TestIris$Species)
+
+mean(IrisqdaClass == TestIris$Species)
+```
+
+
+## 5.8 (5 points)
+
+From the algorithms we used on 5.5--5.8. Which model was the "best"? Why did some models perform better than others out of sample? How did a model's flexibility affect performance in sample? Which model would you use? Explain.
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+```
+
+
+# Question 6 (9 points)
+
+Consider the Example given in Lecture Slide #5 on page 49.
+```{r}
+
+fruits <- read.table(header = T, 
+text = 
+
+"
+Color Shape Size Fruit
+Green Round 2.1 Apple
+Red Round 1.9 Apple
+Red Round 2 Apple
+Green Round 1.8 Apple
+Red Round 1.9 Apple
+Red Round 2.1 Apple
+Green Round 1.6 Apple
+Red Round 1.7 Apple
+Red Round 1.1 Cherry
+Red Round 1 Cherry
+Red Round 1.2 Cherry
+Yellow Oval 2.8 Lemon
+Yellow Oval 2.6 Lemon
+Yellow Oval 2.5 Lemon
+Yellow Round 2.7 Lemon
+")
+
+# Print the data
+
+fruits
+
+# Show structure
+str(fruits)
+```
+
+## 6.1 (3 points)
+
+Class probabilities either by hand calculation or using R:
+
+- P(apple)
+- P(cherry)
+- P(lemon) 
+
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+length(which(fruits[,4]=="Apple"))/nrow(fruits)
+length(which(fruits[,4]=="Cherry"))/nrow(fruits)
+length(which(fruits[,4]=="Lemon"))/nrow(fruits)
+
+```
+
+## 6.2 (3 points)
+
+Calculate conditional color probabilities:
+
+- P(red | apple) =
+- P(green | apple) =
+- P(yellow | apple) =
+
+__Answer:__
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+(length(which(fruits[1:8,1]=="Red"))+(1/3))/(length(which(fruits[,4]=="Apple"))+3*(1/3))
+(length(which(fruits[1:8,1]=="Green"))+(1/3))/(length(which(fruits[,4]=="Apple"))+3*(1/3))
+(length(which(fruits[1:8,1]=="Yellow"))+(1/3))/(length(which(fruits[,4]=="Apple"))+3*(1/3))
+```
+
+
+## 6.3 (3 points)
+
+Compute:
+
+- P(apple | yellow,round,size < 2) $\infty$
+- P(cherry | yellow,round,size < 2) $\infty$
+- P(lemon | yellow,round,size < 2) $\infty$
+
+__Answer:__
+
+```{r}
+# Write the R code here. If you want to describe anything, write them outside of this block
+
+(length(which(fruits[1:8,1]=="Yellow"))+(1/3))/(length(which(fruits[,4]=="Apple"))+3*(1/3))*(length(which(fruits[1:8,2]=="Round"))+(1/3))/(length(which(fruits[,4]=="Apple"))+3*(1/3))*(length(which(fruits[1:8,3]<2))+(1/3))/(length(which(fruits[,4]=="Apple")))*length(which(fruits[,4]=="Apple"))/nrow(fruits)
+
+(length(which(fruits[9:11,1]=="Yellow"))+(1/3))/(length(which(fruits[,4]=="Cherry"))+3*(1/3))*(length(which(fruits[9:11,2]=="Round"))+(1/3))/(length(which(fruits[,4]=="Cherry"))+3*(1/3))*(length(which(fruits[9:11,3]<2))+(1/3))/(length(which(fruits[,4]=="Cherry")))*length(which(fruits[,4]=="Cherry"))/nrow(fruits)
+
+(length(which(fruits[12:15,1]=="Yellow"))+(1/3))/(length(which(fruits[,4]=="Lemon"))+3*(1/3))*(length(which(fruits[12:15,2]=="Round"))+(1/3))/(length(which(fruits[,4]=="Lemon"))+3*(1/3))*(length(which(fruits[12:15,3]<2))+(1/3))/(length(which(fruits[,4]=="Lemon")))*length(which(fruits[,4]=="Lemon"))/nrow(fruits)
+
+```
+
+

@@ -1,0 +1,413 @@
+---
+title: "Midterm Exam"
+author:
+- 'Submitted by: Huan Cheng Wang'
+- 'UNI: hw2647'
+date: 'Posted: 3/11/2019 | Due: 3/18/2019'
+output:
+  word_document: default
+  pdf_document: default
+  html_document:
+    number_sections: no
+subtitle: (APANPS5335 Machine Learning)
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=80))
+```
+
+
+__Instructions__: Please submit both the RMarkdown file and a PDF version. Make sure to complete the name and UNI in the header of this document.
+
+
+# Take-home portion of the Midterm (52 points)
+
+
+# Problem 1 (23 points)
+
+Let us generate a simulated data set. 
+
+```{r}
+set.seed(19)
+err = rnorm(200)
+x = rnorm(200)
+y = x + 3 * x^2 + err
+
+df = data.frame(x, y)
+head(df)
+
+```
+
+## 1.1 (1 point)
+
+In the above dataset `df`, consider $y$ as our outcome variable. How many observations are there and how many predictor variables are there? 
+
+__Answer:__
+
+```{r}
+# Code here
+summary(df)
+str(df)
+## observations: 200, predictor variables: 1
+```
+
+## 1.2 (4 points)
+
+Create a scatterplot of $x$ and $y$ putting the variables appropriately on the x- and y- axes. Comment on what you see from the plot.
+
+__Answer:__
+
+```{r}
+# 2 points for plot
+# 2 points for comment
+plot(x,y)
+
+## there is a quadratic relationship between x and y. the value of y increases as x moves away (both negatively and positively) from 0. There seems to be a cluster of observations near the center of the plot. positive perabola, 
+
+```
+
+
+## 1.3 (12 points) 
+
+Consider the following models that you would like to fit to the data set. 
+
+1) $y = \beta_0 + \beta_1 X + \epsilon$
+2) $y = \beta_0 + \beta_1 X + \beta_2 X^2 + \epsilon$ 
+3) $y = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3 + \epsilon$ 
+4) $y = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3 + \beta_4 X^4 + \epsilon$ 
+
+Now update the dataset `df` to include the new variables $X^2$, $X^3$, and $X^4$. The final dataset should contain $y$, and all the $x$s.  We will be fitting regression models using the dataset, `df`.
+
+Perform $10$-fold cross validation using `cv.glm()` in the `boot` package in R for all four models above and report the cross validation error. Chapter 5 of the textbook has a demonstration of how to do $k$-fold cross validation. 
+
+Use `set.seed(19)` throughout the midterm.
+
+
+__Answer:__
+
+```{r}
+
+# Create new data set
+# 2 points
+set.seed(19)
+df = data.frame(x,x^2,x^3,x^4,y)
+
+# Show head() of the data set
+# 1 point
+head(df)
+
+```
+
+Fit all the models and summarize the cross validatioin error for all the models.
+
+```{r}
+
+# Set the seed
+set.seed(19)
+
+# load any required library for performing bootstrap
+library(boot)
+?cv.glm
+# Fit 4 models 
+# 8 points
+lm1=glm(y~x,data=df)
+lm2=glm(y~x+x.2,data = df)
+lm3=glm(y~x+x.2+x.3,data=df)
+lm4=glm(y~., data=df)
+
+# Return CV errors in a single vector
+# 4 points
+set.seed(19)
+cv1 = cv.glm(data=df,glmfit = lm1,K=10)
+cv1$delta
+cv2= cv.glm(data=df,glmfit=lm2,K=10)
+cv3= cv.glm(data=df,glmfit=lm3,K=10)
+cv4= cv.glm(data=df,glmfit=lm4,K=10)
+
+cv_error=c(cv1$delta[1],cv2$delta[1],cv3$delta[1],cv4$delta[1])
+cv_error
+```
+
+## 1.4 (2 points)
+
+Which model has the lowest cross validation error? Is this what you expected? Explain your answer.
+
+__Answer:__
+
+#cv3, no, ** bring up model comlexity and tatal error. consider applying other models ** 
+
+## 1.5 (4 points)
+
+Comment on the statistical significance of the coefficient estimates that results from fittig each of the four models using least squares. Does these results agree with the conclusions drawn based on the coss validation results?
+
+__Note__: 
+
+Install `stargzaer` pakage to summarize the model parameter estimates. After you install and load the `stargazer` package, use `stargazer(fit1, fit2, fit3, fit4)` to summarize the coefficients in a single table.
+
+```{r model-summary-html, eval=FALSE}
+# In your final PDF output, you must remove this R-chunk. Only PDF will be 
+# acceptable
+
+# This portion of the output will display correctly in html
+#install.packages("stargazer")
+library(stargazer)
+
+fit1=lm1
+fit2=lm2
+fit3=lm3
+fit4=lm4
+stargazer(fit1, fit2, fit3, fit4, type = "latex", 
+          header = FALSE, 
+          title = "Model Summary",out = "*****") 
+
+# Note about the type argument: 
+# To display the results in html, use type = "text"
+# To display the results in PDF use type = 'latex'
+
+```
+
+```{r model-summary-pdf, results='asis'}
+
+# In our final PDF, only this section shuold be INCLUDED
+# This portion of the output will display correctly in PDF file
+# library(stargazer)
+
+
+# Note about the type argument: 
+# To display the results in html, use type = "text"
+# To display the results in PDF use type = 'latex'
+
+```
+
+# Problem 2 (12 points)
+
+Consider the `forestfires.csv` dataset. The goal was to predict the burned `area` of forest fires, in the northeast region of Portugal, by using meteorological and other data. The details about the variables in the data can be found at the following URL https://archive.ics.uci.edu/ml/datasets/Forest+Fires
+
+We have provided you with the data in the Midterm folder. Load the data in your R session and answer the following questions.
+
+```{r}
+# Load the data (1)
+
+setwd("~/Desktop/APANPS5335")
+forest=read.csv("forestfires.csv")
+
+# forest = read the data
+
+# Print the head of the dataset (1)
+head(forest)
+
+# Provide a summary of the data using stargazer package
+# or any other way you like (2)
+summary(forest)
+
+```
+
+## 2.1 (2 points)
+
+Using the data, estimate the population mean area that is burned by the fire. 
+
+Let us denote the estimated mean area by $\hat{\mu}.$
+
+```{r, mean-area}
+# Your code here
+# The estimated mean area burned (in hactor) is: **do we need to normalize the area variable due the the amount of 0s**
+
+meanArea=mean(forest$area)
+```
+
+## 2.2 (2 points)
+
+Provide an estimate of the standard error (SE) of $\hat{\mu}.$
+
+Note that the estimated standard error of the mean can be found by dividing the sample standard deviation by the square root of the number of obesrvations. That is 
+
+$$SE(\hat{\mu}) = \frac{\hat{\sigma}}{\sqrt{n}}.$$
+
+```{r}
+
+# Your code here
+forestSE=function(data, var){
+  x = data[, var]
+  sd(x)/sqrt(nrow(data))
+}
+
+# the SE of the mean is:
+forestSE(forest, "area")
+
+```
+
+## 2.3 (4 points)
+
+Obtain the estimated standard error using 1000 bootstrap samples. How does this compare with your calculated SE above?
+
+```{r}
+# Set Seed
+set.seed(19)
+
+# Write the function to perform subsequent bootstrap (2+2)
+forestSE2=function(data, ind){
+  x = data[ind, "area"]
+  se = sd(x)/sqrt(nrow(data))
+  return(se)
+}
+
+forestBoot = boot(data=forest, statistic = forestSE2, R=1000)
+forestBoot
+
+## the estimated standard error using 1000 bootstrap samples is lower than the SE calculated above.
+```
+
+# Problem 3 (27 points)
+
+Data are available from a study that was conducted between 1958 and 1970 at the University of Chicago's Billings Hospital onthe survival of patients who had undergone surgery for breast cancer.
+
+Attribute Information:
+
+- Age of patient at time of operation (numerical)
+- Patient's year of operation (year - 1900, numerical)
+- Number of positive axillary nodes detected (numerical)
+- Survival status (class attribute): 
+-  - 1 = the patient survived 5 years or longer
+-  - 2 = the patient died within 5 year
+         
+Here's the data set
+
+```{r, breast-cancer}
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/haberman/haberman.data"
+var_name = c("age", "year", "nnodes", "died_w5")
+df = read.csv(url)
+colnames(df) = var_name
+head(df)
+str(df)
+```
+
+## 3.1 (4 points)
+
+Create a new predictor variable by replacing the `died_w5` as follows: `survived=1` if `died_w5 = 2`, or else `survived=0`. Basically, you are creating a binary outcome variable coded as 1 if the patient died within 5 years and 0 if survived.
+
+```{r}
+# Create the new variable surv in the df dataset (2 points)
+# Answer here
+#if else statement
+df$survived=ifelse(df$died_w5==2,1,0)
+
+# Show the head of the data (1 point)
+# Answer here
+head(df)
+# Show the frequency of the surv variable (1 point)
+# Answer here
+
+library(plyr)
+count(df$survived)
+```
+
+## 3.2 (2 points)
+
+
+```{r}
+# Partition the data into training and test sets in 70:30 ratio. 
+# 2 points
+set.seed(19)
+df$survived = as.factor(df$survived)
+dfShuffle= df[sample(nrow(df)),]
+summary(dfShuffle)
+nrow(dfShuffle)
+
+
+dfTrain=dfShuffle[1:214,]
+dfTest=dfShuffle[215:305,]
+
+```
+
+## 3.3 (21 points)
+
+Perform logistic regression on the training set in order to predict survival using the three original variables. 
+
+```{r}
+# Fit logistic regression and model summary 
+# 5 points
+
+# Your code here
+set.seed(19)
+dfTrainglm=glm(survived~age+year+nnodes,data=dfTrain,family="binomial")
+dfTestglm=glm(survived~age+year+nnodes,data=dfTest,family= "binomial")
+
+summary(dfTrainglm)
+summary(dfTestglm)
+
+# Calculate the test error (misclassification error)
+# 2 points
+library(Matrix)
+library(foreach)
+library(glmnet)
+library(lattice)
+library(ggplot2)
+library(caret)
+
+dfTrainpredLm = predict(dfTrainglm, newdata=dfTrain, type="response")
+dfTestpredLm = predict(dfTestglm, newdata=dfTest, type="response")
+
+# redefine the pred variable as pred = 1 if > 0.5
+dfTrain$Response= ifelse(dfTrainpredLm>=0.5,1,0)
+dfTrain$DeadAlive= ifelse(dfTrain$survived==1,1,0)
+dfTest$Response = ifelse(dfTestpredLm>=0.5,1,0)
+dfTest$DeadAlive= ifelse(dfTest$survived==1,1,0)
+
+confusionMatrix(table(dfTest$Response,dfTest$DeadAlive))
+dfTestError=(23+3)/(64+3+23+1)
+
+```
+
+What is the test error rate?
+
+```{r}
+# Test error is 
+1-dfTestError
+```
+
+Now perform LDA and QDA on the data set and compare the error rates between logistic regression, LDA and QDA. 
+
+```{r, lda}
+
+# Perform LDA and show the summary
+# 5 points
+library(MASS)
+set.seed(19)
+dfLDAfit=lda(survived~nnodes+year+age, dfTrain)
+summary(dfLDAfit)
+
+# Model fitting goes here
+dfLDAPred=predict(dfLDAfit,newdata = dfTest,type="response")
+dfLDAPred$class
+
+# Calculate Error rate
+# 2 points
+cmLDA = confusionMatrix(dfLDAPred$class,dfTest$survived)
+cmLDA
+
+dfLDAError=1-0.7363
+dfLDAError
+```
+
+Fitting QDA
+
+```{r, qda}
+
+# Perform QDA and show summary
+# 5 points
+dfQDAfit=qda(survived~nnodes+year+age, dfTrain)
+summary(dfQDAfit)
+# Error rate
+# 2 points
+dfQDAPred=predict(dfQDAfit,newdata = dfTest,type="response")
+dfQDAPred$class
+
+cmQDA = confusionMatrix(dfQDAPred$class,dfTest$survived)
+cmQDA
+dfQDAError=1-0.7363
+dfQDAError
+```
+
+As we see, the QDA has slightly smaller error rate. 

@@ -1,0 +1,416 @@
+---
+title: "APAN5335_HW4_hw2647"
+author: "Huan Cheng Wang"
+date: "4/6/2019"
+output: word_document
+---
+
+```{r}
+#1a) (1 points) True or False: The cross-validation error is an unbiased estimator of the generalization error for a model class. 
+#True
+#1b) (1 points) True or False: The variance of cross-validation is an unbiased estimator of the variance for a model class.
+#False
+#1c) (5 points) Suppose you want to pick between Naive Bayes Classifier and KNN classifier. You split up your data into a training set and a testing set. You then choose the best parameter for the Naive Bayes Classifier μ∗ and KNN k∗ using cross validation on the training set. Now you want to pick between Naive Bayes and KNN.
+#Which of the following procedures is correct?
+##a) Fit the KNN with k∗ and the Naive Bayes Classifier with μ∗ to the training set and choose the one that does the best on the test set.
+##b) Pick whichever had a better cross-validation performance.
+### B
+#1d) (2 points) Suppose you fit an LDA model to some training data set. Suppose you are also given a test data set that you haven’t looked at yet. Describe how you would evaluate the performance of your fit LDA model using that test data set?
+## Apply bootsrap error rate on test dataset.
+#1e) (1 points) True or False: When bootstrapping, we sample with replacement.
+#True
+
+```
+## Question 2. (16 points) We will begin by loading and preprocessing real world data. We will use a few functions to load and process a Ham vs Spam data set using the Naive Bayes classifier.
+This data set has already been preprocessed for you by removing punctuation, removing stop words, and stemming. Stemming involved reducing a word to its stem, for example running will be reduced to run.
+This is an example of an original spam message:
+ Subject:  negative concord
+i am interested in the grammar of negative concord in various dialects of american and british english .
+if anyone out there speaks natively a dialect that uses negative concord and is willing to answer
+grammaticality questions about their dialect , would they please send me an email note to that effect and
+i ’ ll get back to them with my queries .  my address is :  kroch @ change .  ling .  upenn .  edu thanks .
+1
+And this is what you will be working with:
+negative concord interest grammar negative concord various dialect american british english anyone speak
+natively dialect negative concord answer grammaticality question dialect please send email note effect
+ll back query address kroch change ling upenn edu thank
+
+##2a) (1 points) Download the Ham vs Spam data set from the course website.
+
+##2b) (1 points)
+Create the readDirectory() method below:
+readDirectory <− function(dirname) { # Store the emails in a list
+emails = list ();
+# Get a list of filenames in the directory
+filenames = dir(dirname, full .names=TRUE); for (i in 1:length(filenames)){
+emails[[i]] = scan(filenames[i],what=””,quiet=TRUE); }
+return( emails ) }
+
+```{r cars}
+readDirectory<-function(dirname){
+  emails=list();
+  filenames = dir(dirname, full.names=TRUE); for (i in 1:length(filenames)){
+    emails[[i]] = scan(filenames[i],what="",quiet=TRUE); }
+  return(emails) }
+```
+
+2c) (4 points) Use the readDirectory() method to load the ham train, spam train, ham test, and spam test data sets. Note, you have to pass the correct base-directory into the data set.
+
+```{r}
+
+hamTrain=readDirectory("/Users/huancwang/Desktop/ham-v-spam/ham-train")
+hamTest=readDirectory("/Users/huancwang/Desktop/ham-v-spam/ham-test")
+spamTrain=readDirectory("/Users/huancwang/Desktop/ham-v-spam/spam-train")
+spamTest=readDirectory("/Users/huancwang/Desktop/ham-v-spam/spam-test")
+
+```
+
+2d) (2 points) Print the first element in spam train and the first element in ham train.
+
+```{r}
+# 1st list of element 
+spamTrain[1]
+hamTrain[1]
+# 1st element of the 1st list of element
+spamTrain[[1]][1]
+hamTrain[[1]][1]
+```
+
+2e) (1 points) Create the makeSortedDictionaryDf() method below:
+makeSortedDictionaryDf <− function(emails){
+# This returns a dataframe that is sorted by the number of times # a word appears
+# List of vectors to one big vetor
+dictionaryFull <− unlist(emails) # Tabulates the full dictionary
+tabulateDic <− tabulate(factor(dictionaryFull)) # Find unique values
+dictionary <− unique( dictionaryFull ) # Sort them alphabetically
+dictionary <− sort(dictionary)
+dictionaryDf <− data.frame(word = dictionary , count = tabulateDic) sortDictionaryDf <− dictionaryDf [order(dictionaryDf$count, decreasing=TRUE) ,]; return( sortDictionaryDf )
+}
+
+```{r}
+makeSortedDictionarydf<- function(emails){
+  dictionaryFull<-unlist(emails)
+  tabulateDict<-tabulate(factor(dictionaryFull))
+  dictionary<-unique(dictionaryFull)
+  dictionary<-sort(dictionary)
+  dictionaryDf<-data.frame(word=dictionary, count=tabulateDict)
+  sortDictionaryDf<-dictionaryDf[order(dictionaryDf$count, decreasing=TRUE),];
+  return(sortDictionaryDf)
+}
+
+```
+
+2f) (2 points) Concatenate ham train, spam train, ham test, and spam test in to a single list called all emails. Use this list to create dictionary using the makeSortedDictionaryDf() method.
+
+```{r}
+all_emails=c(hamTrain, spamTrain, hamTest, spamTest)
+dictionary<- makeSortedDictionarydf(all_emails)
+```
+
+
+2g) (1 points) Create the makeDocumentTermMatrix() method below. This method will create a document term matrix, which converts a data set into a matrix where each row represents a document and each column represents a word. Each element ei,j in the document term matrix is the number of times word j appeared in document i.
+           2
+makeDocumentTermMatrix <− function(emails , dictionary){
+# This takes the email and dictionary objects from above and outputs a # document term matrix
+num emails <− length(emails);
+num words <− length(dictionary$word);
+# Instantiate a matrix where rows are documents and columns are words
+dtm <− mat.or.vec(num emails , num words); # A matrix filled with zeros for (i in 1:num emails){
+num words email <− length(emails [[ i ]]); e m a i l t e m p <− e m a i l s [ [ i ] ] ;
+for (j in 1:num words email){
+          ind<−which(dictionary$word==email temp[j]); d t m [ i , i n d ] <− d t m [ i , i n d ] + 1 ;
+ } }
+return(dtm); }
+
+```{r}
+makeDocumentTermMatrix<- function(emails, dictionary){
+  num_emails<-length(emails);
+  num_words<-length(dictionary$word);
+  dtm<-mat.or.vec(num_emails,num_words);
+  for(i in 1:num_emails){
+    num_words_email<-length(emails[[i]]);
+    email_temp<-emails[[i]];
+    for (j in 1:num_words_email){
+    ind<-which(dictionary$word==email_temp[j]);
+    dtm[i,ind]<-dtm[i,ind]+1;
+  }
+}
+return(dtm);
+}
+
+```
+
+2h) (4 points) Use makeDocumentTermMatrix() to create dtm ham train, dtm spam train, dtm ham test, and dtm spam test using the the respective data from question 2c and the dictionary from 2f.
+Note: This could take a few minutes to run because we are using for-loops in R.
+
+```{r}
+dtm_ham_train=makeDocumentTermMatrix(hamTrain,dictionary)
+dtm_spam_train=makeDocumentTermMatrix(spamTrain,dictionary)
+dtm_ham_test=makeDocumentTermMatrix(hamTest,dictionary)
+dtm_spam_test=makeDocumentTermMatrix(spamTest,dictionary)
+```
+
+## Question 3. (31 points) Now that we have preprocessed the data, we can now construct our Naive Bayes Classifier. We will classify a test document as “spam” if the following holds:
+nn
+p(y = spam)􏰉p(Xj = xij|y = spam) ≥ p(y = ham)􏰉p(Xj = xij|y = ham),
+j=1 j=1
+where p(Xj = xij|y = spam) is the probability that word j appears xij times in document i when the document is labeled spam. Note that instead of using the the probability p, we will instead use the log-probability log p for numerical reasons. We also
+don’t care about normalization because it does not impact our decision. 
+
+3a) (1 points) Create the makeLogPvec() method below:
+makeLogPvec <− function (dtm , mu){
+# Sum up the number of instances per word
+pvecNoMu <− colSums(dtm) # Sum up number of words
+nWords <− sum(pvecNoMu) # Get dictionary size
+dicLen <− length(pvecNoMu)
+# Incorporate mu and normalize
+logPvec <− log(pvecNoMu + mu) − log(mu∗dicLen + nWords)
+return(logPvec) }
+
+```{r}
+makeLogPvec <- function(dtm, mu){
+  pvecNoMu<-colSums(dtm)
+  nWords<-sum(pvecNoMu)
+  dicLen<-length(pvecNoMu)
+  logPVec<-log(pvecNoMu+mu)-log(mu*dicLen + nWords)
+  return(logPVec)
+}
+```
+
+3b) (2 points) Use dtm ham train, dtm spam train, and dictionary to make log pvec ham and log pvec spam respectively.
+Set mu equal to 1 , where |D| is the length of dictionary.
+
+```{r}
+mu=1/length(dictionary$word)
+log_pvec_ham=makeLogPvec(dtm_ham_train,mu)
+log_pvec_spam=makeLogPvec(dtm_spam_train,mu)
+```
+
+3c) (5 points) Create the predictNaiveBayes() method. This method should take in the log probabilities for the ham document and spam document, the prior probability for spam or ham, and a document term matrix to be classified. It then returns a vector of 0 or 1, where 0 means ham and 1 means spam.
+predictNaiveBayes <− function(log pvec ham, log pvec spam, log ham prior , log spam prior , dtm test ) {
+# your code here
+}
+
+```{r}
+
+predictNaiveBayes= function(log_pvec_ham, log_pvec_spam, log_ham_prior,log_spam_prior,dtm_test){
+  #pred=rep(0, times=nrow(dtm_test))
+  vec=vector(,nrow(dtm_test))
+  for (i in nrow(dtm_test)){
+    x41= sum(dtm_test[i,]*log_pvec_spam)+log_spam_prior
+    x42= sum(dtm_test[i,]*log_pvec_ham)+log_ham_prior
+    if (x41>x42){
+      vec[1]=1
+    }
+    else{
+      vec[1]=0
+    }
+    
+  }
+return(vec)
+}
+
+```
+
+3d) (3 points) Use the predictNaiveBayes() method to calculate the accuracy, sensitivity (hit rate), and (1-specificity) false alarm rates for the test data sets.
+
+```{r}
+log_spam_prior=log(nrow(dtm_spam_train)/nrow(dtm_spam_train)+nrow(dtm_ham_train))
+log_ham_prior=log(nrow(dtm_ham_train/nrow(dtm_spam_train)+nrow(dtm_ham_train)))
+
+hamPred= predictNaiveBayes(log_pvec_ham,log_pvec_spam,log_ham_prior,log_spam_prior,dtm_ham_test)
+spamPred= predictNaiveBayes(log_pvec_ham,log_pvec_spam,log_ham_prior,log_spam_prior,dtm_spam_test)
+
+hitRate=mean(spamPred)
+hitRate #argument is not numeric or logical: returning NA
+falseAlarm=1-mean(hamPred)
+falseAlarm #argument is not numeric or logical: returning NA
+accuracy=(sum(spamPred)+length(hamPred)-sum(hamPred))/(length(hamPred)+length(spamPred)) #returned NaN
+accuracy
+```
+
+3e) (6 points) Naive Bayes has a parameter μ, which we set to 1 in question 3b. |D|
+Create a method that calculates the average accuracy for 5-fold cross validation given a single parameter for μ. fiveFoldCV <− function(dtm ham train , dtm spam train , log ham prior , log spam prior , mu) {
+# your code here
+# split up your data into 5 sets
+n <− nrow(dtm ham train) fold size<−n/5
+for (i in 1:5) {
+                     full range <− 1:n
+validation range <− (( i −1) ∗ fold size + 1):( i ∗ fold size ) train range <− full range[ ! full range %in% validation range]
+# your code here
+# train on the train range using makeLogPvec()
+# validate on the validation range using predictNaiveBayes()
+# calculate the error rate and store in vector (did you initialize it?)
+}
+# return the average error over all folds # your code here
+          }
+
+```{r}
+fiveFoldCV= function(dtm_ham_train, dtm_spam_train, log_ham_prior, log_spam_prior, mu){
+  error=numeric(5)
+  n=nrow(dtm_ham_train) 
+  fold_size=n/5
+  
+  for (i in 1:5) {
+    full_range=1:n
+    validation_range=((i-1) * fold_size + 1):(i * fold_size) 
+    train_range=full_range[! range %in% validation_range]
+    hamlogpvec=makeLogPvec(dtm_ham_train[train_range,], mu)
+    spamlogpvecs=makeLogPvec(dtm_spam_train[train_range,], mu) 
+    hamP=predictNaiveBayes(log_pvec_ham,log_pvec_spam,log_ham_prior,log_spam_prior,dtm_ham_train[validation_range])
+    spamP=predictNaiveBayes(log_pvec_ham,log_pvec_spam,log_ham_prior,log_spam_prior,dtm_spam_train[validation_range])
+    error[i]=(mean(hamP)+mean(1-spamP))/2
+  }
+    print(mean(error))
+}
+```
+
+3f) (3 points) Using a for loop, run 5-fold cross validation to select the best μ from the following list:
+
+What is the best μ?
+
+```{r}
+mu1=c(1/100,1/10,1,10,100)*(1/length(dictionary$word))
+E=length(mu1)
+#for(i in length(mu1)){E[i]=fiveFoldCV(dtm_ham_train,dtm_spam_train,dtm_ham_test,dtm_spam_test,mu1)}
+##for loop doesn't go through?
+bestMu=mu1[which.min((E))]
+print(bestMu)
+
+```
+
+3g) (7 points) Use the chosen value of μ from the previous question to train the Naive Bayes Classifier on all of the training
+data. Test on all of the testing data and print the accuracy, sensitivity (hit rate), and (1-specificity) (false alarm rate).
+
+```{r}
+
+log_pvec_ham3g= makeLogPvec(dtm_ham_train,bestMu)
+log_pvec_spam3g= makeLogPvec(dtm_spam_train,bestMu)
+
+hamPred3g=predictNaiveBayes(log_pvec_ham3g,log_pvec_spam3g,log_ham_prior,log_spam_prior,dtm_ham_test)
+spamPred3g=predictNaiveBayes(log_pvec_ham3g,log_pvec_spam3g,log_ham_prior,log_spam_prior,dtm_spam_test)
+
+hitRate3g=mean(spamPred3g)
+hitRate3g 
+falseAlarm3g=1-mean(hamPred3g)
+falseAlarm 
+c3g=(sum(spamPred3g)+length(hamPred3g)-sum(hamPred3g))
+a3g=(length(hamPred3g)+length(spamPred3g))
+accuracy3g=c3g/a3g
+accuracy3g
+
+```
+
+3h) (3 points) Compare the performance on question 3g to the performance on question 3d. Did the model with parameter
+μ returned by cross validation perform better? Which one should we use? Explain.
+
+```{r}
+# very low % of true defaulters identified
+# perfect false alarm rate
+# only near 50% accuracy 
+# both return the same number (which I know I did something wrong), indifferent
+```
+
+Question 4. (7 points) In this final question we will look at how we can use mutual information to select features. Recall that mutual information is expressed as entropies:
+
+In this case, the mutual information is as follows:
+
+4a) (1 points) Create the function calculateMI() that calculates the mutual information for all of the words and returns a
+vector.
+calculateMI <− function(dtm ham train , dtm spam train ) {
+# calculates vector of mutual information for each word.
+ham sums <− colSums(dtm ham train)
+ham probs <− ham sums / sum(ham sums) # vector of probabilities for each word in ham
+spam sums <− colSums(dtm spam train)
+spam probs <− spam sums / sum(spam sums) # vector of probabilities for each word in spam
+all sums <− ham sums + spam sums
+all probs <− all sums / sum(all sums) # vector of probabilites for word in entire set
+mi <− c(1:length(all probs))
+for (i in 1:length(all probs)) {
+if (all probs[i] == 0) {
+mi[ i ] <− 0 # mutual information −> 0 when p(X=x) = 0
+                         }
+else {
+mi[i] <−.5 ∗ ham probs[i] ∗ log(ham probs[i] / all probs[i]) +
+.5 ∗ (1 − ham probs[i]) ∗ log((1 − ham probs[i])/(1 − all probs[i])) + .5 ∗ spam probs[i] ∗ log(spam probs[i] / all probs[i]) +
+.5 ∗ (1 − spam probs[i]) ∗ log((1 − spam probs[i])/(1 − all probs[i]))
+            }
+return ( mi ) }
+
+```{r}
+calculateMI <- function(dtm_ham_train , dtm_spam_train ) {
+  ham_sums <- colSums(dtm_ham_train)
+  ham_probs <- ham_sums/sum(ham_sums) 
+  spam_sums <- colSums(dtm_spam_train)
+  spam_probs <- spam_sums/sum(spam_sums) 
+  all_sums <- ham_sums+spam_sums
+  all_probs <- all_sums/sum(all_sums) 
+  mi <- c(1:length(all_probs))
+  for (i in 1:length(all_probs)) {
+    if (all_probs[i] == 0) {
+      mi[i] <- 0 
+    }
+    else {
+      mi[i] <- (.5 * ham_probs[i] * log(ham_probs[i]/all_probs[i])) +
+        (.5 * (1-ham_probs[i]) * log((1-ham_probs[i])/(1-all_probs[i]))) + (.5 * spam_probs[i] * log(spam_probs[i]/all_probs[i])) +
+        (.5 * (1-spam_probs[i]) * log((1-spam_probs[i])/(1-all_probs[i])))
+    }
+  }
+  return(mi)
+}
+```
+
+4b) (1 points) Use the calculateMI function to get the mutual information vector for all of the words only using the training data.
+
+```{r}
+mi_train=calculateMI(dtm_ham_train, dtm_spam_train)
+```
+
+4c) (3 points) Take the n columns of the dtm ham train, dtm ham test, dtm spam train, and dtm spam test matrices with the smallest mutual information. Fit your Naive Bayes Classifier using the training sets with μ = 1 . Calculate the sensitivity
+n
+(hit rate), 1-specificity (false alarm rate), and accuracy on the test sets.
+Create 3 plots (sensitivity (hit rate), 1-specificity (false alarm rate), and accuracy) using n = (200, 500, 1000, 2500, 5000, 10000).
+
+
+```{r}
+
+Fit_Predict=function(dtm_ham_train,dtm_spam_train,dtm_ham_test,dtm_spam_test,mu){
+  logPvecHam4c=makeLogPvec(dtm_ham_train,mu)
+  logPvecSpam4c=makeLogPvec(dtm_spam_train,mu)
+  hamP4c=predictNaiveBayes(logPvecHam4c,logPvecSpam4c,log_ham_prior,log_spam_prior,dtm_ham_test)
+  spamP4c=predictNaiveBayes(logPvecHam4c,logPvecSpam4c,log_ham_prior,log_spam_prior,dtm_spam_test)
+  hitRate4c=mean(spamP4c)
+  falseAlarm4c=1-mean(hamP4c)
+  c4c=(sum(spamP4c)+length(hamP4c)-sum(hamP4c))
+  a4c=(length(hamP4c)+length(spamP4c))
+  accuracy4c=c4c/a4c
+print(c(hitRate4c,falseAlarm4c,accuracy4c))
+}
+
+n4c=c(200, 500, 1000, 2500, 5000, 10000)
+hitRaten4c2=length(n4c)
+falseAlarmRaten4c2=length(n4c)
+accuracyn4c2=length(n4c)
+for (i in 1:length(n4c)) {
+  n4c2=n4c[i]
+ dtm_ham_train4c=dtm_ham_train[,order(mi_train)[1:n4c2]]
+  dtm_spam_train4c=dtm_spam_train[,order(mi_train)[1:n4c2]]
+  dtm_ham_test4c=dtm_ham_test[,order(mi_train)[1:n4c2]]
+  dtm_spam_test4c=dtm_spam_test[,order(mi_train)[1:n4c2]]
+FitPred4c=Fit_Predict(dtm_ham_train4c,dtm_spam_train4c,dtm_ham_test4c,dtm_spam_test4c,1/n4c2)
+FitPred4c
+hitRaten4c2[i]=FitPred4c[1]
+falseAlarmRaten4c2[i]=FitPred4c[2]
+accuracyn4c2[i]=FitPred4c[3]
+}
+
+plot(n4c,hitRaten4c2)
+plot(n4c,falseAlarmRaten4c2)
+plot(n4c,accuracyn4c2)
+```
+
+4d) (2 points) Which value of n would you use and why?
+
+```{r}
+# n=1000, highest accuracy rate
+```
